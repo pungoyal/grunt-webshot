@@ -7,43 +7,80 @@
  */
 
 module.exports = function (grunt) {
-	'use strict';
+  'use strict';
 
-	grunt.registerMultiTask('webshot', 'Render screenshots of webpages', function() {
-		var options = this.options({
-			site: null,
-			savePath: null
-		});
-		var done = this.async();
+  grunt.registerMultiTask('webshot', 'Render screenshots of webpages', function () {
+    var options = this.options({
+      site: null,
+      savePath: null
+    });
+    var done = this.async();
 
-		// late init webshot
-		var webshot = require('webshot');
+    var webshot = require('webshot');
 
-		if (!options.site) {
-			grunt.fail.warn('undefined site');
-			done(false);
-		}
-		if (!options.savePath) {
-			grunt.fail.warn('undefined savePath');
-			done(false);
-		}
+    if (!options.site) {
+      grunt.fail.warn('undefined site');
+      done(false);
+    }
+    if (!options.savePath) {
+      grunt.fail.warn('undefined savePath');
+      done(false);
+    }
 
-		// copy own options
-		var site = options.site;
-		var savePath = options.savePath;
+    // copy own options
+    var site = options.site;
+    var savePath = options.savePath;
 
-		// clean from webshot's options
-		delete options.site;
-		delete options.savePath;
+    // clean from webshot's options
+    delete options.site;
+    delete options.savePath;
 
-		// lets go
-		webshot(site, savePath, options, function(err) {
-			if (err) {
-				grunt.log.writeln('webshot error:');
-				grunt.fail.warn(err);
-				done(false);
-			}
-			done(true);
-		});
-	});
+    // lets go
+    webshot(site, savePath, options, function (err) {
+      if (err) {
+        grunt.log.writeln('webshot error:');
+        grunt.fail.warn(err);
+        done(false);
+      }
+      done(true);
+    });
+  });
+
+  grunt.registerMultiTask('webshots', 'Render screenshots of multiple webpages', function () {
+    var options = this.options({
+      urls: null,
+      saveDir: null
+    });
+    var done = this.async();
+    var webshot = require('webshot');
+
+    if (!options.urls) {
+      grunt.fail.warn('undefined urls');
+      done(false);
+    }
+    if (!options.saveDir) {
+      grunt.fail.warn('undefined saveDir');
+      done(false);
+    }
+
+    // copy own options
+    var urlsMap = options.urls;
+    var saveDir = options.saveDir;
+
+    // clean from webshot's options
+    delete options.site;
+    delete options.saveDir;
+
+    for (var i = 0; i < urlsMap.length; i++) {
+      var urlMap = urlsMap[i];
+      var extension = urlMap.extension || 'png';
+      var savePath = saveDir + '/' + urlMap.name + '.' + extension;
+      webshot(urlMap.url, savePath, options, function (err) {
+        if (err) {
+          grunt.log.writeln('webshot error:');
+          grunt.fail.warn(err);
+        }
+      });
+    }
+  });
 };
