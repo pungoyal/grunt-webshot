@@ -51,7 +51,7 @@ module.exports = function (grunt) {
       urls: null,
       saveDir: null
     });
-    var done = this.async();
+    var done = this.async(), async = grunt.util.async;
     var webshot = require('webshot');
 
     if (!options.urls) {
@@ -71,8 +71,7 @@ module.exports = function (grunt) {
     delete options.site;
     delete options.saveDir;
 
-    for (var i = 0; i < urlsMap.length; i++) {
-      var urlMap = urlsMap[i];
+    async.forEach(urlsMap, function (urlMap, cb) {
       var extension = urlMap.extension || 'png';
       var savePath = saveDir + '/' + urlMap.name + '.' + extension;
       webshot(urlMap.url, savePath, options, function (err) {
@@ -80,7 +79,10 @@ module.exports = function (grunt) {
           grunt.log.writeln('webshot error:');
           grunt.fail.warn(err);
         }
+        cb();
       });
-    }
+    }, function (error) {
+      done(!error);
+    });
   });
 };
